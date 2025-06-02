@@ -4,7 +4,7 @@ const { Firestore, FieldValue } = require('@google-cloud/firestore'); // Import 
 // Initialize Firestore client
 const firestore = new Firestore();
 
-functions.cloudEvent('logUserPageview', async (cloudEvent) => {
+functions.cloudEvent('main', async (cloudEvent) => {
   const base64data = cloudEvent.data.message.data;
   const eventDataString = Buffer.from(base64data, 'base64').toString('utf-8');
 
