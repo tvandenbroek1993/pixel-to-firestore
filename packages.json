@@ -1,0 +1,10 @@
+{
+  "name": "pubsub-to-firestore-function",
+  "version": "1.0.0",
+  "description": "Cloud Function triggered by Pub/Sub to write to Firestore",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "@google-cloud/firestore": "^7.0.0"
+  }
+}
