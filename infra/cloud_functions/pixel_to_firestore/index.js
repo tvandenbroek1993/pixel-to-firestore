@@ -1,4 +1,4 @@
-exports.helloPubSub = (event, context) => {
+exports.main = (event, context) => {
   const message = event.data
     ? Buffer.from(event.data, 'base64').toString()
     : 'Hello, World';
