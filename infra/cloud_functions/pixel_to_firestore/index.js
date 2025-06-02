@@ -1,35 +1,38 @@
+import * as functions from 'firebase-functions';
 const admin = require('firebase-admin');
-const { PubSub } = require('@google-cloud/pubsub');
 
-const db = admin.firestore();
-const pubsub = new PubSub();
+admin.initializeApp();
 
-exports.main = (event, context) => {
-  const message = event.data
-    ? Buffer.from(event.data, 'base64').toString()
-    : null;
+exports.insertFromPubsub = functions.pubsub
+  .topic('environmental-sensors') // replace with your actual topic name
+  .onPublish((message, context) => {
+    console.log('The function was triggered at', context.timestamp);
 
-  if (!message) {
-    console.error('No message found in event data.');
-    return;
-  }
+    const messageBody = message.data
+      ? Buffer.from(message.data, 'base64').toString()
+      : null;
 
-  try {
-    const outer = JSON.parse(message);
-    const payload = outer.jsonPayload || outer;
+    if (!messageBody) {
+      console.error('No message body found.');
+      return;
+    }
 
-    const userId = payload.pixel_user_id;
-    const sessionId = payload.pixel_session_id;
+    try {
+      const parsed = JSON.parse(messageBody);
+      const payload = parsed.jsonPayload || parsed;
 
-    const host = payload.location?.host;
-    const path = payload.location?.path;
-    const url = host && path ? host + path : null;
+      const userId = payload.pixel_user_id;
+      const sessionId = payload.pixel_session_id;
 
-    console.log('User ID:', userId);
-    console.log('Session ID:', sessionId);
-    console.log('Raw Page URL:', url);
-  } catch (error) {
-    console.error('Failed to parse or extract data:', error);
-    console.log('Raw message content:', message);
-  }
-};
+      const host = payload.location?.host;
+      const path = payload.location?.path;
+      const url = host && path ? `https://${host}${path}` : null;
+
+      console.log('User ID:', userId);
+      console.log('Session ID:', sessionId);
+      console.log('Full Page URL:', url);
+    } catch (error) {
+      console.error('Failed to parse message:', error);
+      console.log('Raw message content:', messageBody);
+    }
+  });
