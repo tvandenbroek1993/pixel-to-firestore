@@ -9,14 +9,15 @@ exports.main = (event, context) => {
   }
 
   try {
-    const logEvent = JSON.parse(message);
-    const payload = logEvent.jsonPayload || logEvent;
+    const outer = JSON.parse(message);
+    const payload = outer.jsonPayload || outer;
 
     const userId = payload.pixel_user_id;
     const sessionId = payload.pixel_session_id;
-    const host = payload.event_body.location.host;
-    const path = payload.event_body.location.path;
-    const url = host + path;
+
+    const host = payload.location?.host;
+    const path = payload.location?.path;
+    const url = host && path ? host + path : null;
 
     console.log('User ID:', userId);
     console.log('Session ID:', sessionId);
