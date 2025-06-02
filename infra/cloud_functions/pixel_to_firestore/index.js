@@ -23,34 +23,34 @@ exports.main = async (event, context) => {
     console.log('Session ID:', sessionId);
     console.log('Raw Page URL:', url);
 
-    const admin = require('firebase-admin');
-
-    // Initialize only if not already initialized (important for re-used functions)
-    if (!admin.apps.length) {
-      admin.initializeApp();
-    }
-
-    const firestore = admin.firestore();
-
-    // Create collection ID by concatenating userId and sessionId
-    const collectionId = `${userId}_${sessionId}`;
-
-    // Reference to a document inside this collection
-    // For example, a fixed doc ID "sessionData" to hold the URLs array
-    const docRef = firestore.collection(collectionId).doc('sessionData');
-
-    // Update the document: add URL to 'urls' array if URL exists
-    if (url) {
-      await docRef.set(
-        {
-          urls: admin.firestore.FieldValue.arrayUnion(url),
-        },
-        { merge: true }
-      );
-      console.log('URL added to Firestore array');
-    } else {
-      console.log('No valid URL found, skipping Firestore update');
-    }
+//    const admin = require('firebase-admin');
+//
+//    // Initialize only if not already initialized (important for re-used functions)
+//    if (!admin.apps.length) {
+//      admin.initializeApp();
+//    }
+//
+//    const firestore = admin.firestore();
+//
+//    // Create collection ID by concatenating userId and sessionId
+//    const collectionId = `${userId}_${sessionId}`;
+//
+//    // Reference to a document inside this collection
+//    // For example, a fixed doc ID "sessionData" to hold the URLs array
+//    const docRef = firestore.collection(collectionId).doc('sessionData');
+//
+//    // Update the document: add URL to 'urls' array if URL exists
+//    if (url) {
+//      await docRef.set(
+//        {
+//          urls: admin.firestore.FieldValue.arrayUnion(url),
+//        },
+//        { merge: true }
+//      );
+//      console.log('URL added to Firestore array');
+//    } else {
+//      console.log('No valid URL found, skipping Firestore update');
+//    }
   } catch (error) {
     console.error('Failed to parse or extract data:', error);
     console.log('Raw message content:', message);
