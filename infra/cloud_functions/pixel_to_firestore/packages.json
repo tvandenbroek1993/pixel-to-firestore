@@ -4,6 +4,6 @@
   "dependencies": {
     "@google-cloud/pubsub": "^0.18.0",
     "@google-cloud/firestore": "^7.7.0",
-    "@google-cloud/firebase-admin": "13.4.0"
+    "firebase-admin": "^12.1.1"
   }
 }
