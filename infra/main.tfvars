@@ -5,5 +5,3 @@ region = "europe-west1"
 project_id = "dda-and-fpp"
 
 terraform_sa_email = "terraform-sa@dda-and-fpp.iam.gserviceaccount.com"
-
-pubsub_topic_name = "pixel-events"

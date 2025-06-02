@@ -13,7 +13,3 @@ variable "terraform_sa_email" {
 variable "region" {
   type        = string
 }
-
-variable "pubsub_topic_name" {
-  type        = string
-}

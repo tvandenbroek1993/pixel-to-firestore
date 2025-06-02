@@ -91,7 +91,7 @@ resource "google_cloudfunctions2_function" "function_pixel_to_firestore" {
   event_trigger {
     trigger_region = local.region
     event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic   = google_pubsub_topic.default.id
+    pubsub_topic   = "pixel-events"
     retry_policy   = "RETRY_POLICY_RETRY"
   }
   service_config {
