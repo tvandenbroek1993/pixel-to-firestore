@@ -4,8 +4,8 @@
   "description": "Cloud Function to process pixel events and write to Firestore",
   "main": "index.js",
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.3.0",  // Or the latest compatible version
-    "@google-cloud/firestore": "^7.7.0"            // Or the latest compatible version
+    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/firestore": "^7.7.0"
   },
   "scripts": {
     "start": "functions-framework --target=main"

@@ -7,7 +7,8 @@ locals {
     "roles/iam.serviceAccountUser",
     "roles/cloudfunctions.developer",
     "roles/cloudfunctions.serviceAgent",
-    "roles/pubsub.publisher"
+    "roles/pubsub.publisher",
+    "roles/datastore.user
   ]
 }
 
