@@ -6,7 +6,6 @@ locals {
     "roles/storage.admin",
     "roles/iam.serviceAccountUser",
     "roles/cloudfunctions.developer",
-    "roles/secretmanager.secretAccessor",
     "roles/cloudfunctions.serviceAgent",
     "roles/pubsub.publisher"
   ]
@@ -46,10 +45,6 @@ resource "google_storage_bucket" "input_bucket" {
 
 data "google_storage_project_service_account" "gcs_account" {
   project = var.project_id
-}
-
-resource "google_pubsub_topic" "default" {
-  name = var.pubsub_topic_name
 }
 
 # ----------------------------------- #
