@@ -1,38 +1,36 @@
-import * as functions from 'firebase-functions';
-const admin = require('firebase-admin');
+exports.main = (event, context) => {
+  const message = event.data
+    ? Buffer.from(event.data, 'base64').toString()
+    : null;
 
-admin.initializeApp();
+  if (!message) {
+    console.error('No message found in event data.');
+    return;
+  }
 
-exports.insertFromPubsub = functions.pubsub
-  .topic('pixel-events')
-  .onPublish((message, context) => {
-    console.log('The function was triggered at', context.timestamp);
+  try {
+    const outer = JSON.parse(message);
+    const payload = outer.jsonPayload || outer;
 
-    const messageBody = message.data
-      ? Buffer.from(message.data, 'base64').toString()
-      : null;
+    const userId = payload.pixel_user_id;
+    const sessionId = payload.pixel_session_id;
 
-    if (!messageBody) {
-      console.error('No message body found.');
-      return;
-    }
+    const host = payload.location?.host;
+    const path = payload.location?.path;
+    const url = host && path ? host + path : null;
 
-    try {
-      const parsed = JSON.parse(messageBody);
-      const payload = parsed.jsonPayload || parsed;
+    console.log('User ID:', userId);
+    console.log('Session ID:', sessionId);
+    console.log('Raw Page URL:', url);
 
-      const userId = payload.pixel_user_id;
-      const sessionId = payload.pixel_session_id;
+    const admin = require('firebase-admin');
 
-      const host = payload.location?.host;
-      const path = payload.location?.path;
-      const url = host && path
+    admin.initializeApp();
 
-      console.log('User ID:', userId);
-      console.log('Session ID:', sessionId);
-      console.log('Full Page URL:', url);
-    } catch (error) {
-      console.error('Failed to parse message:', error);
-      console.log('Raw message content:', messageBody);
-    }
-  });
+  } catch (error) {
+    console.error('Failed to parse or extract data:', error);
+    console.log('Raw message content:', message);
+  }
+};
+
+
