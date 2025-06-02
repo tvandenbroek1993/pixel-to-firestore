@@ -1,7 +1,6 @@
 {
   "name": "pixel-to-firestore",
   "version": "1.0.0",
-  "description": "Cloud Function to process pixel events and write to Firestore",
   "main": "index.js",
   "dependencies": {
     "@google-cloud/functions-framework": "^3.3.0",
