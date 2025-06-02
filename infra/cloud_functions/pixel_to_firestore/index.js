@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 exports.insertFromPubsub = functions.pubsub
-  .topic('environmental-sensors') // replace with your actual topic name
+  .topic('pixel-events')
   .onPublish((message, context) => {
     console.log('The function was triggered at', context.timestamp);
 
@@ -26,7 +26,7 @@ exports.insertFromPubsub = functions.pubsub
 
       const host = payload.location?.host;
       const path = payload.location?.path;
-      const url = host && path ? `https://${host}${path}` : null;
+      const url = host && path
 
       console.log('User ID:', userId);
       console.log('Session ID:', sessionId);
