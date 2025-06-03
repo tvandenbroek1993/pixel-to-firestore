@@ -79,7 +79,7 @@ resource "google_storage_bucket_object" "zip_pixel_to_firestore" {
   ]
 }
 
-resource "google_storage_bucket_object" "zip_bigquery_to_firestoree" {
+resource "google_storage_bucket_object" "zip_bigquery_to_firestore" {
   source       = data.archive_file.source_bigquery_to_firestore.output_path
   content_type = "application/zip"
   name         = "pixel_to_firestore-${data.archive_file.source_bigquery_to_firestore.output_md5}.zip"
