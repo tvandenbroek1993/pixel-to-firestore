@@ -1,11 +1,3 @@
-/**
- * Responds to any HTTP request.
- */
-
-
-//bigqueryTableID: your.bigquery.tableid,
-//firestoreCollection: Firestore Collection Name
-//columnName: Name of the column of the BigQuery table used as documentID for Firestore
 
 const {BigQuery} = require('@google-cloud/bigquery');
 const bigquery = new BigQuery();

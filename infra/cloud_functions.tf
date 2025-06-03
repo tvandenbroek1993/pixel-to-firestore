@@ -81,19 +81,13 @@ resource "google_cloudfunctions2_function" "function_pixel_to_firestore" {
   project  = var.project_id
   build_config {
     runtime     = "nodejs20"
-    entry_point = "main"
+    entry_point = "transferData"
     source {
       storage_source {
         bucket = google_storage_bucket.cloud_function_source_bucket.name
         object = google_storage_bucket_object.zip_pixel_to_firestore.name
       }
     }
-  }
-  event_trigger {
-    trigger_region = local.region
-    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic   = "projects/${local.project_id}/topics/pixel-events"
-    retry_policy   = "RETRY_POLICY_RETRY"
   }
   service_config {
     max_instance_count = 1
