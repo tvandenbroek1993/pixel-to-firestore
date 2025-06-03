@@ -1,12 +1,9 @@
 {
-  "name": "cloud-function-transfer-data-from-bigquery-to-firestore",
-  "version": "1.0.0",
-  "main": "transferData.js",
-  },
+  "name": "pixel-to-pubsub",
+  "version": "0.0.1",
   "dependencies": {
-    "@google-cloud/bigquery": "^6.0.3",
-    "@google-cloud/firestore": "^6.4.1",
-    "@google-cloud/functions": "^2.2.3",
-    "@google-cloud/functions-framework": "^3.1.2"
+    "@google-cloud/pubsub": "^0.18.0",
+    "@google-cloud/firestore": "^7.7.0",
+    "firebase-admin": "^12.1.1"
   }
 }

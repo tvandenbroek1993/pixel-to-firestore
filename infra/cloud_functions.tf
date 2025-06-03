@@ -56,6 +56,12 @@ data "archive_file" "source_pixel_to_firestore" {
   source_dir  = "${path.module}/cloud_functions/pixel_to_firestore"
 }
 
+data "archive_file" "source_bigquery_to_firestore" {
+  type        = "zip"
+  output_path = "${path.module}/cloud_functions_build/bigquery_to_firestore.zip"
+  source_dir  = "${path.module}/cloud_functions/bigquery_to_firestore"
+}
+
 
 # ----------------------------------- #
 
@@ -73,6 +79,20 @@ resource "google_storage_bucket_object" "zip_pixel_to_firestore" {
   ]
 }
 
+resource "google_storage_bucket_object" "zip_bigquery_to_firestoree" {
+  source       = data.archive_file.source_bigquery_to_firestore.output_path
+  content_type = "application/zip"
+  name         = "pixel_to_firestore-${data.archive_file.source_bigquery_to_firestore.output_md5}.zip"
+  bucket       = google_storage_bucket.cloud_function_source_bucket.name
+  metadata = {
+    source_hash = data.archive_file.source_bigquery_to_firestore.output_md5
+  }
+  depends_on = [
+    google_storage_bucket.cloud_function_source_bucket,
+    data.archive_file.source_pixel_to_firestore
+  ]
+}
+
 # ----------------------------------- #
 
 resource "google_cloudfunctions2_function" "function_pixel_to_firestore" {
@@ -81,13 +101,19 @@ resource "google_cloudfunctions2_function" "function_pixel_to_firestore" {
   project  = var.project_id
   build_config {
     runtime     = "nodejs20"
-    entry_point = "transferData"
+    entry_point = "main"
     source {
       storage_source {
         bucket = google_storage_bucket.cloud_function_source_bucket.name
         object = google_storage_bucket_object.zip_pixel_to_firestore.name
       }
     }
+  }
+  event_trigger {
+    trigger_region = local.region
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = "projects/${local.project_id}/topics/pixel-events"
+    retry_policy   = "RETRY_POLICY_RETRY"
   }
   service_config {
     max_instance_count = 1
@@ -102,9 +128,43 @@ resource "google_cloudfunctions2_function" "function_pixel_to_firestore" {
   ]
 }
 
+resource "google_cloudfunctions2_function" "function_bigquery_to_firestore" {
+  name     = "bigquery-to-firestore"
+  location = var.region
+  project  = var.project_id
+  build_config {
+    runtime     = "nodejs20"
+    entry_point = "main"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.cloud_function_source_bucket.name
+        object = google_storage_bucket_object.zip_bigquery_to_firestore.name
+      }
+    }
+  }
+  service_config {
+    max_instance_count = 1
+    available_memory   = "256M"
+    timeout_seconds    = 60
+    ingress_settings               = "ALLOW_ALL"
+    service_account_email          = google_service_account.function_sa.email
+  }
+  depends_on = [
+    google_storage_bucket_object.zip_bigquery_to_firestore,
+    module.project-services
+  ]
+}
+
 # ----------------------------------- #
 
 data "google_iam_policy" "invoker_function_pixel_to_firestore" {
+  binding {
+    role    = "roles/run.invoker"
+    members = ["allUsers"]
+  }
+}
+
+data "google_iam_policy" "invoker_function_bigquery_to_firestore" {
   binding {
     role    = "roles/run.invoker"
     members = ["allUsers"]
@@ -119,6 +179,14 @@ resource "google_cloud_run_v2_service_iam_policy" "invoker_pixel_to_firestore" {
   name        = google_cloudfunctions2_function.function_pixel_to_firestore.name
   policy_data = data.google_iam_policy.invoker_function_pixel_to_firestore.policy_data
   depends_on  = [google_cloudfunctions2_function.function_pixel_to_firestore]
+}
+
+resource "google_cloud_run_v2_service_iam_policy" "invoker_bigquery_to_firestore" {
+  project     = google_cloudfunctions2_function.function_bigquery_to_firestore.project
+  location    = google_cloudfunctions2_function.function_bigquery_to_firestore.location
+  name        = google_cloudfunctions2_function.function_bigquery_to_firestore.name
+  policy_data = data.google_iam_policy.invoker_function_bigquery_to_firestore.policy_data
+  depends_on  = [google_cloudfunctions2_function.function_bigquery_to_firestore]
 }
 
 

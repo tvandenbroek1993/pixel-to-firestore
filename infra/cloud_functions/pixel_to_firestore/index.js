@@ -1,64 +1,58 @@
+exports.main = async (event, context) => {
+  const message = event.data
+    ? Buffer.from(event.data, 'base64').toString()
+    : null;
 
-const {BigQuery} = require('@google-cloud/bigquery');
-const bigquery = new BigQuery();
-const {Firestore} = require('@google-cloud/firestore');
-const firestore = new Firestore();
-const functions = require('@google-cloud/functions-framework');
-
-
-functions.http('transferData', (req, res) => {
-  let bigqueryTableID;
-  let firestoreCollection;
-  let columnName;
-  let tableLocation;
-
-  if(req.body.bigqueryTableID && req.body.firestoreCollection && req.body.columnName && req.body.tableLocation){
-    bigqueryTableID = req.body.bigqueryTableID;
-    firestoreCollection = req.body.firestoreCollection;
-    columnName = req.body.columnName;
-    tableLocation = req.body.location;
-    transferData();
-    
-  }
-  else{
-    res.status(500).json({"success":"false","message":"Wrong / Missing Request Body"});
+  if (!message) {
+    console.error('No message found in event data.');
+    return;
   }
 
-  async function transferData() {
-   
-    let bulkWriter = firestore.bulkWriter();
-    let documentID;
-    console.log(req.body);
-    console.log(toString(req));
-    const query = `SELECT * FROM \`${bigqueryTableID}\``;
+  try {
+    const outer = JSON.parse(message);
+    const payload = outer.jsonPayload || outer;
 
-    // For all options, see https://cloud.google.com/bigquery/docs/reference/rest/v2/jobs/query
-    const bigQueryOptions = {
-      query: query,
-      // Location must match that of the dataset(s) referenced in the query.
-      location: tableLocation,
-    };
+    const userId = payload.pixel_user_id;
+    const sessionId = payload.pixel_session_id;
 
-    // Run the query as a job
-    const [job] = await bigquery.createQueryJob(bigQueryOptions);
-    console.log(`BigQuery Job ${job.id} started.`);
+    const host = payload.location?.host;
+    const path = payload.location?.path;
+    const url = host && path ? host + path : null;
 
-    // Wait for the query to finish
-    const [rows] = await job.getQueryResults();
-    console.log(`BigQIery Job ${job.id} finished.`)
-    const firestoreOptions = {"merge":true};
-    
-    //Bulkwrite rows to Firestore Collection
-    rows.forEach(function(row){
-      documentID = firestoreCollection+"/"+row[columnName];
-      bulkWriter.set(firestore.doc(documentID), row, firestoreOptions).catch((err) => {
-        console.log(`Failed to create / update document: ${err}`);
-      });
-    });
+    console.log('User ID:', userId);
+    console.log('Session ID:', sessionId);
+    console.log('Raw Page URL:', url);
 
-    await bulkWriter.close().then(function(){
-      console.log("Executed all writes");
-    });
-    return res.status(200).json({"success":"true","message":"complete"});
+//    const admin = require('firebase-admin');
+//
+//    // Initialize only if not already initialized (important for re-used functions)
+//    if (!admin.apps.length) {
+//      admin.initializeApp();
+//    }
+//
+//    const firestore = admin.firestore();
+//
+//    // Create collection ID by concatenating userId and sessionId
+//    const collectionId = `${userId}_${sessionId}`;
+//
+//    // Reference to a document inside this collection
+//    // For example, a fixed doc ID "sessionData" to hold the URLs array
+//    const docRef = firestore.collection(collectionId).doc('sessionData');
+//
+//    // Update the document: add URL to 'urls' array if URL exists
+//    if (url) {
+//      await docRef.set(
+//        {
+//          urls: admin.firestore.FieldValue.arrayUnion(url),
+//        },
+//        { merge: true }
+//      );
+//      console.log('URL added to Firestore array');
+//    } else {
+//      console.log('No valid URL found, skipping Firestore update');
+//    }
+  } catch (error) {
+    console.error('Failed to parse or extract data:', error);
+    console.log('Raw message content:', message);
   }
-});
+};
